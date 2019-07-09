@@ -2,28 +2,25 @@ package videoeditor.videoeffect.myapplication;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.SurfaceView;
 import android.widget.TextView;
+
+import videoeditor.videoeffect.opengl.NativeOpengl;
+import videoeditor.videoeffect.opengl.WLSurfaceView;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Used to load the 'native-lib' library on application startup.
-    static {
-        System.loadLibrary("native-lib");
-    }
+    private WLSurfaceView surfaceview;
+    private NativeOpengl nativeOpengl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Example of a call to a native method
-        TextView tv = findViewById(R.id.sample_text);
-        tv.setText(stringFromJNI());
+        surfaceview = findViewById(R.id.surfaceview);
+        nativeOpengl = new NativeOpengl();
+        surfaceview.setNativeOpengl(nativeOpengl);
     }
 
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI();
+
 }
