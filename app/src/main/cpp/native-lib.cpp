@@ -1,6 +1,10 @@
 #include <jni.h>
 #include <string>
 
+#include "EGL/egl.h"
+#include "GLES2/gl2.h"
+#include "android/native_window.h"
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_videoeditor_videoeffect_myapplication_MainActivity_stringFromJNI(
         JNIEnv *env,
