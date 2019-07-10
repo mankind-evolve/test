@@ -10,7 +10,7 @@
 #include "pthread.h"
 #include "WLEglHelper.h"
 #include <unistd.h>
-#include <GLES2/gl2.h>\
+#include <GLES2/gl2.h>
 
 
 
@@ -28,12 +28,38 @@ public:
     bool  surfaceWidth = 0 ;
     bool  surfaceHeight = 0 ;
 
+
+//    创建的回调
+    typedef void(*OnCreate)(void*);
+    OnCreate onCreate;
+    void* onCreatectx;
+
+//    改变的回调
+    typedef void(*OnChange)(int w,int h,void*);
+    OnChange  onChange;
+    void* onChangectx;
+
+//    绘制的回调
+    typedef void (*OnDraw)(void*);
+    OnDraw  onDraw;
+    void*  onDrawctx;
+
+
+
+
+
 public:
     WLEglThread();
     ~WLEglThread();
 
     void onSurfaceCreate(EGLNativeWindowType window);
     void onSurfaceChange(int width ,int height);
+
+    void callbackOnCreate(OnCreate onCreate1,void* ctx);
+
+    void callbackOnChange(OnChange onChange,void* ctx);
+
+    void callbackOnDraw(OnDraw onDraw,void* ctx);
 };
 
 
