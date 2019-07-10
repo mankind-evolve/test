@@ -6,10 +6,11 @@
 #include "android/native_window.h"
 #include "android/native_window_jni.h"
 #include "GLES2/gl2.h"
+#include "egl/WLEglThread.h"
 
 
-WLEglHelper* wlEglHelper = NULL;
 ANativeWindow* aNativeWindow = NULL;
+WLEglThread* wlEglThread = NULL;
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -18,16 +19,20 @@ Java_videoeditor_videoeffect_opengl_NativeOpengl_surfaceCreate(JNIEnv *env, jobj
 
     // TODO
     aNativeWindow = ANativeWindow_fromSurface(env,surface);
-    wlEglHelper = new WLEglHelper();
-    wlEglHelper->initEgl(aNativeWindow);
-
-    //opengl
-    glViewport(0,0,1080,1920);
-    glClearColor(1.0f,1.0f,0.0f,1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    wlEglHelper->swapBuffers();
+    wlEglThread = new WLEglThread();
+    wlEglThread->onSurfaceCreate(aNativeWindow);
 
 
+
+
+}extern "C"
+JNIEXPORT void JNICALL
+Java_videoeditor_videoeffect_opengl_NativeOpengl_surfaceChange(JNIEnv *env, jobject instance,
+                                                               jint width, jint height) {
+
+    // TODO
+    if(wlEglThread != NULL){
+        wlEglThread->onSurfaceChange(width,height);
+    }
 
 }
