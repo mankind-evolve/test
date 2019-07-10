@@ -9,12 +9,15 @@
 
 
 WLEglThread::WLEglThread() {
+    pthread_mutex_init(&pthread_mutex,NULL);
+    pthread_cond_init(&pthread_cond,NULL);
+
 
 }
 
 WLEglThread::~WLEglThread() {
-
-
+    pthread_mutex_destroy(&pthread_mutex);
+    pthread_cond_destroy(&pthread_cond);
 
 }
 
@@ -51,8 +54,17 @@ void* eglThreadImpl(void* context){
                 wlEglThread->onDraw(wlEglThread->onDrawctx); //渲染的回调
             }
 
+            if(wlEglThread->renderType == OPENGL_RENDER_AUTO ){
+                usleep(1000000/60);  //帧率 60
+            }else{
+//                线程锁
+                pthread_mutex_lock(&wlEglThread->pthread_mutex);
+                pthread_cond_wait(&wlEglThread->pthread_cond,&wlEglThread->pthread_mutex);
+                pthread_mutex_unlock(&wlEglThread->pthread_mutex);
+            }
 
-            usleep(1000000/60);
+
+
 
 
             if(wlEglThread->isExit){
@@ -69,7 +81,6 @@ void WLEglThread::onSurfaceCreate(EGLNativeWindowType window) {
     if(eglThread == -1){
         isCreate = true;
         nativeWindow = window;
-
         pthread_create(&eglThread,NULL,eglThreadImpl,this);//创建线程
     }
 
@@ -99,5 +110,18 @@ void WLEglThread::callbackOnDraw(OnDraw onDraw,void* ctx) {
     this->onDraw = onDraw;
     this->onDrawctx = ctx;
 
+
+}
+
+void WLEglThread:: setRenderType(int renderType) {
+    this->renderType = renderType;
+}
+
+void WLEglThread::notifyRender() {
+    pthread_mutex_lock(&pthread_mutex);
+
+    pthread_cond_signal(&pthread_cond);
+
+    pthread_mutex_unlock(&pthread_mutex);
 
 }

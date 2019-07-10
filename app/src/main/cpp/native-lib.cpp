@@ -30,7 +30,7 @@ void callback_SurfaceOnchage(int w, int h ,void* ctx){
 void callback_SurfaceOndraw(void* ctx){
     LOGD("callback_SurfaceOndraw");
     WLEglThread* wlEglThread1 = static_cast<WLEglThread *>(ctx);
-    glClearColor(1.0f,0.0f,0.0f,1.0f);
+    glClearColor(1.0f,1.0f,0.0f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -42,7 +42,7 @@ Java_videoeditor_videoeffect_opengl_NativeOpengl_surfaceCreate(JNIEnv *env, jobj
     // TODO
     aNativeWindow = ANativeWindow_fromSurface(env,surface);
     wlEglThread = new WLEglThread();
-
+//    wlEglThread->setRenderType(OPENGL_RENDER_HANDLE);//设置为手动渲染
     wlEglThread->callbackOnCreate(callback_SurfaceCreate,wlEglThread);
     wlEglThread->callbackOnChange(callback_SurfaceOnchage,wlEglThread);
     wlEglThread->callbackOnDraw(callback_SurfaceOndraw,wlEglThread);
