@@ -14,12 +14,13 @@
 ANativeWindow* aNativeWindow = NULL;
 WLEglThread* wlEglThread = NULL;
 
-const char* vertex="attribute vec4 a_position;\n"
-                    "\n"
-                    "void main(){\n"
-                    "   gl_Position = a_position;\n"
-                    "}";
-const char* fragment = "precision mediump float;\n"
+
+const char *vertex = "attribute vec4 a_position;\n"
+                     "\n"
+                     "void main(){\n"
+                     "    gl_Position = a_position;\n"
+                     "}";
+const char *fragment = "precision mediump float;\n"
                        "\n"
                        "void main(){\n"
                        "    gl_FragColor = vec4(1f,0f,0f,1f);\n"
@@ -41,7 +42,8 @@ void callback_SurfaceCreate(void* ctx){
 
     program = createProgrm(vertex,fragment);
     LOGD("opengl program is %d",program);
-    vPostion = glGetAttribLocation(program,"a_postion");
+    vPostion = glGetAttribLocation(program,"a_position");
+
 
 
 
