@@ -8,6 +8,7 @@
 
 #include <EGL/eglplatform.h>
 #include "pthread.h"
+#include "android/native_window.h"
 #include "WLEglHelper.h"
 #include <unistd.h>
 #include <GLES2/gl2.h>
@@ -27,8 +28,8 @@ public:
     bool isExit = false;
     bool isstart = false;
 
-    bool surfaceWidth = 0;
-    bool surfaceHeight = 0;
+    int surfaceWidth = 0;
+    int surfaceHeight = 0;
 
 
 //    创建的回调

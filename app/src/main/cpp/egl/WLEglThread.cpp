@@ -39,7 +39,6 @@ void* eglThreadImpl(void* context){
                 LOGD("eglthread call surfaceChange");
                 wlEglThread->isChange = false;
                 glViewport(0,0,wlEglThread->surfaceWidth,wlEglThread->surfaceHeight); //清屏 设置屏幕大小
-                wlEglThread->isstart = true;
                 wlEglThread->onChange(wlEglThread->surfaceWidth,wlEglThread->surfaceHeight,
                         wlEglThread->onChangectx);//执行change回调
                 wlEglThread->isstart =true;
@@ -90,8 +89,7 @@ void WLEglThread::onSurfaceChange(int width, int height) {
     isChange= true;
     surfaceWidth = width;
     surfaceHeight = height;
-
-
+    notifyRender();
 }
 
 void WLEglThread::callbackOnCreate(WLEglThread::OnCreate onCreate, void *ctx) {

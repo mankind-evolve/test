@@ -14,7 +14,7 @@
 ANativeWindow* aNativeWindow = NULL;
 WLEglThread* wlEglThread = NULL;
 
-const char* vertex="attribute vec2 a_position;\n"
+const char* vertex="attribute vec4 a_position;\n"
                     "\n"
                     "void main(){\n"
                     "   gl_Position = a_position;\n"
@@ -26,9 +26,25 @@ const char* fragment = "precision mediump float;\n"
                        "}";
 
 
+int program;
+GLint vPostion;
+float  vertexs[] = {
+        -1,-1,
+        1,-1,
+        0,1
+};
+
+
 void callback_SurfaceCreate(void* ctx){
     LOGD("callback_SurfaceCreate");
     WLEglThread* wlEglThread1 = static_cast<WLEglThread *>(ctx);
+
+    program = createProgrm(vertex,fragment);
+    LOGD("opengl program is %d",program);
+    vPostion = glGetAttribLocation(program,"a_postion");
+
+
+
 }
 
 void callback_SurfaceOnchage(int w, int h ,void* ctx){
@@ -44,6 +60,14 @@ void callback_SurfaceOndraw(void* ctx){
     WLEglThread* wlEglThread1 = static_cast<WLEglThread *>(ctx);
     glClearColor(1.0f,1.0f,0.0f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+
+//    绘制了个三角形
+    glUseProgram(program);
+    glEnableVertexAttribArray(vPostion);
+    glVertexAttribPointer(vPostion,2,GL_FLOAT, false,8,vertexs);//用2个值代表一个点 传2
+    // 一个点占8个字节，以8个字节为单位截取
+    glDrawArrays(GL_TRIANGLES,0,3);
 
 
 }
@@ -64,10 +88,6 @@ Java_videoeditor_videoeffect_opengl_NativeOpengl_surfaceCreate(JNIEnv *env, jobj
 
     wlEglThread->onSurfaceCreate(aNativeWindow);
 
-    int program = createProgrm(vertex,fragment);
-    LOGD("opengl program is %d",program);
-
-
 
 }extern "C"
 JNIEXPORT void JNICALL
@@ -77,6 +97,8 @@ Java_videoeditor_videoeffect_opengl_NativeOpengl_surfaceChange(JNIEnv *env, jobj
     // TODO
     if(wlEglThread != NULL){
         wlEglThread->onSurfaceChange(width,height);
+        usleep(1000000);
+        wlEglThread->notifyRender();
     }
 
 }
