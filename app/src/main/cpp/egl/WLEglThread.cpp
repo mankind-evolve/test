@@ -50,8 +50,8 @@ void* eglThreadImpl(void* context){
             if(wlEglThread->isstart){
 //                glClearColor(0.0f,1.0f,1.0f,1.0f);
 //                glClear(GL_COLOR_BUFFER_BIT);
-                wlEglHelper->swapBuffers();//执行渲染
                 wlEglThread->onDraw(wlEglThread->onDrawctx); //渲染的回调
+                wlEglHelper->swapBuffers();//执行渲染
             }
 
             if(wlEglThread->renderType == OPENGL_RENDER_AUTO ){
@@ -119,9 +119,7 @@ void WLEglThread:: setRenderType(int renderType) {
 
 void WLEglThread::notifyRender() {
     pthread_mutex_lock(&pthread_mutex);
-
     pthread_cond_signal(&pthread_cond);
-
     pthread_mutex_unlock(&pthread_mutex);
 
 }

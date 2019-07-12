@@ -82,7 +82,7 @@ int WLEglHelper::initEgl(EGLNativeWindowType window) {
     LOGE("eglCreateWindowSurface success");
 
     //7     绑定EglContext和surface到显示设备中      --eglMakeCurrent
-    if (eglMakeCurrent(mEGLDisplay, mEGLSurface, mEGLSurface, mEGLContext)) {
+    if (!eglMakeCurrent(mEGLDisplay, mEGLSurface, mEGLSurface, mEGLContext)) {
         LOGE("eglMakeCurrent err");
         return -1;
     }
