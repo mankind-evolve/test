@@ -76,6 +76,11 @@ void callback_SurfaceCreate(void *ctx) {
 
     initMatrix(matrix); //初始化成单位矩阵
 
+//    rotateMatrix_z(-90,matrix); //生成旋转90的矩阵
+//    scaleMatrix(0.75,matrix); //生成缩放一半的矩阵
+//    tranMatrix(0.5,0,matrix);
+//    orthM(-3, 1, -1, 1, matrix);
+
     glGenTextures(1, &textureId); //生成一个纹理，并赋值到textureId上面
 
     glBindTexture(GL_TEXTURE_2D, textureId);// 绑定
@@ -96,10 +101,21 @@ void callback_SurfaceCreate(void *ctx) {
 
 }
 
-void callback_SurfaceOnchage(int w, int h, void *ctx) {
+void callback_SurfaceOnchage(int width, int height, void *ctx) {
     LOGD("callback_SurfaceOnchage");
     WLEglThread *wlEglThread1 = static_cast<WLEglThread *>(ctx);
-    glViewport(0, 0, w, h);
+    glViewport(0, 0, width, height); //设置屏幕的大小
+
+    float screen_r = 1.0f * width / height;
+    float picture_r = 1.0f * w / h;
+
+    if (screen_r > picture_r) { //图片高度缩放
+        float r = width / (1.0 * height / h * w);
+        orthM(-r,r,-1,1,matrix);
+    } else {//图片宽度缩放
+        float r = height / (1.0f * width / w * h);
+        orthM(-1,1,-r,r,matrix);
+    }
 
 
 }
@@ -111,11 +127,11 @@ void callback_SurfaceOndraw(void *ctx) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(program);
-    glUniformMatrix4fv(u_Matrix,1,GL_FALSE,matrix); //赋值矩阵
+    glUniformMatrix4fv(u_Matrix, 1, GL_FALSE, matrix); //赋值矩阵
 
 
     glActiveTexture(GL_TEXTURE0); //激活默认第0个纹理
-    glUniform1i(sampler,0); // 0是指纹理的类别  使用0类别，对应GL_TEXTURE0
+    glUniform1i(sampler, 0); // 0是指纹理的类别  使用0类别，对应GL_TEXTURE0
 
 
 
@@ -180,7 +196,7 @@ Java_videoeditor_videoeffect_opengl_NativeOpengl_imgData(JNIEnv *env, jobject in
     h = height;
 
     pixels = malloc(lenth);
-    memcpy(pixels,data,lenth);
+    memcpy(pixels, data, lenth);
 
     env->ReleaseByteArrayElements(data_, data, 0);
 }

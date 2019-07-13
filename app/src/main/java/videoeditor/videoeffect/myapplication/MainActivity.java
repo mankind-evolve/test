@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         nativeOpengl = new NativeOpengl();
         surfaceview.setNativeOpengl(nativeOpengl);
 
-        final Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.q2);
+        final Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.q3);
         ByteBuffer byteBuffer = ByteBuffer.allocate(bitmap.getHeight() * bitmap.getWidth() * 4);
         bitmap.copyPixelsToBuffer(byteBuffer);
         byteBuffer.flip();
