@@ -75,6 +75,8 @@ public:
     void setRenderType(int renderType);
 
     void notifyRender();
+
+    void destroy();
 };
 
 

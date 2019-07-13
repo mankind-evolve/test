@@ -24,13 +24,19 @@ public class MainActivity extends AppCompatActivity {
         surfaceview = findViewById(R.id.surfaceview);
         nativeOpengl = new NativeOpengl();
         surfaceview.setNativeOpengl(nativeOpengl);
+        surfaceview.setOnSurfaceListener(new WLSurfaceView.OnSurfaceListener() {
+            @Override
+            public void init() {
+                final Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.q3);
+                ByteBuffer byteBuffer = ByteBuffer.allocate(bitmap.getHeight() * bitmap.getWidth() * 4);
+                bitmap.copyPixelsToBuffer(byteBuffer);
+                byteBuffer.flip();
+                byte[] pixels = byteBuffer.array();
+                nativeOpengl.imgData(bitmap.getWidth(),bitmap.getHeight(),pixels.length,pixels);
 
-        final Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.q3);
-        ByteBuffer byteBuffer = ByteBuffer.allocate(bitmap.getHeight() * bitmap.getWidth() * 4);
-        bitmap.copyPixelsToBuffer(byteBuffer);
-        byteBuffer.flip();
-        byte[] pixels = byteBuffer.array();
-        nativeOpengl.imgData(bitmap.getWidth(),bitmap.getHeight(),pixels.length,pixels);
+            }
+        });
+
 
 
     }

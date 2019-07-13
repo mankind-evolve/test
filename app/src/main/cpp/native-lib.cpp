@@ -1,202 +1,53 @@
 #include <jni.h>
 #include <string>
+#include "opengl/WLOpengl.h"
 
-
-#include "egl/WLEglHelper.h"
-#include "android/native_window.h"
-#include "android/native_window_jni.h"
-#include "GLES2/gl2.h"
-#include "egl/WLEglThread.h"
-#include "log/WLAndroidLog.h"
-#include "shaderutil/WLShaderUtil.h"
-#include "matrix/MatrixUtil.h"
-
-
-ANativeWindow *aNativeWindow = NULL;
-WLEglThread *wlEglThread = NULL;
-
-
-const char *vertex = "attribute vec4 v_Position;\n"
-                     "attribute vec2 f_Position; \n"
-                     "varying vec2 ft_Position;\n"
-                     "uniform mat4 u_Matrix;\n"
-                     "void main(){\n"
-                     "    ft_Position = f_Position;\n"
-                     "    gl_Position = v_Position * u_Matrix;\n"
-                     "}";
-const char *fragment = "precision mediump float;\n"
-                       "varying vec2 ft_Position;\n"
-                       "uniform sampler2D sTexture;\n"
-                       "void main(){\n"
-                       "    gl_FragColor = texture2D(sTexture,ft_Position);\n"
-                       "}";
-
-
-int program;
-GLint vPostion;
-GLint fPostion;
-GLint sampler;
-GLint u_Matrix;
-GLuint textureId;
-void *pixels = NULL;
-
-
-int w;
-int h;
-
-//顶点坐标
-float vertexs[] = {
-        1, -1,
-        1, 1,
-        -1, -1,
-        -1, 1
-};
-
-//纹理坐标
-float fragments[] = {
-        1, 1,
-        1, 0,
-        0, 1,
-        0, 0
-};
-
-float matrix[16];
-
-
-void callback_SurfaceCreate(void *ctx) {
-    LOGD("callback_SurfaceCreate");
-    WLEglThread *wlEglThread1 = static_cast<WLEglThread *>(ctx);
-
-    program = createProgrm(vertex, fragment);
-    LOGD("opengl program is %d", program);
-    vPostion = glGetAttribLocation(program, "v_Position"); //顶点坐标
-    fPostion = glGetAttribLocation(program, "f_Position"); //纹理坐标
-    sampler = glGetUniformLocation(program, "sTexture"); //2d纹理
-    u_Matrix = glGetUniformLocation(program, "u_Matrix"); //坐标变换矩阵
-
-    initMatrix(matrix); //初始化成单位矩阵
-
-//    rotateMatrix_z(-90,matrix); //生成旋转90的矩阵
-//    scaleMatrix(0.75,matrix); //生成缩放一半的矩阵
-//    tranMatrix(0.5,0,matrix);
-//    orthM(-3, 1, -1, 1, matrix);
-
-    glGenTextures(1, &textureId); //生成一个纹理，并赋值到textureId上面
-
-    glBindTexture(GL_TEXTURE_2D, textureId);// 绑定
-
-//    设置环绕的方式
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//    设置过滤的方式
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
-    if (pixels != NULL) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-    }
-
-    glBindTexture(GL_TEXTURE_2D, 0);// 解绑定
-
-}
-
-void callback_SurfaceOnchage(int width, int height, void *ctx) {
-    LOGD("callback_SurfaceOnchage");
-    WLEglThread *wlEglThread1 = static_cast<WLEglThread *>(ctx);
-    glViewport(0, 0, width, height); //设置屏幕的大小
-
-    float screen_r = 1.0f * width / height;
-    float picture_r = 1.0f * w / h;
-
-    if (screen_r > picture_r) { //图片高度缩放
-        float r = width / (1.0 * height / h * w);
-        orthM(-r,r,-1,1,matrix);
-    } else {//图片宽度缩放
-        float r = height / (1.0f * width / w * h);
-        orthM(-1,1,-r,r,matrix);
-    }
-
-
-}
-
-void callback_SurfaceOndraw(void *ctx) {
-    LOGD("callback_SurfaceOndraw");
-    WLEglThread *wlEglThread1 = static_cast<WLEglThread *>(ctx);
-    glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glUseProgram(program);
-    glUniformMatrix4fv(u_Matrix, 1, GL_FALSE, matrix); //赋值矩阵
-
-
-    glActiveTexture(GL_TEXTURE0); //激活默认第0个纹理
-    glUniform1i(sampler, 0); // 0是指纹理的类别  使用0类别，对应GL_TEXTURE0
-
-
-
-//    绘制了个三角形
-    glUseProgram(program);
-    glBindTexture(GL_TEXTURE_2D, textureId);// 绑定
-    glEnableVertexAttribArray(vPostion);
-    glVertexAttribPointer(vPostion, 2, GL_FLOAT, false, 8, vertexs);//用2个值代表一个点 传2
-
-
-    glEnableVertexAttribArray(fPostion);
-    glVertexAttribPointer(fPostion, 2, GL_FLOAT, false, 8, fragments);//用2个值代表一个点 传2
-
-
-
-    // 一个点占8个字节，以8个字节为单位截取
-//    glDrawArrays(GL_TRIANGLES,0,6); //截取6个点绘制，  两个三角形
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); //截取6个点绘制，  两个三角形
-
-
-
-    glBindTexture(GL_TEXTURE_2D, 0);// 解绑定
-}
+WLOpengl* wlOpengl = NULL;
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_videoeditor_videoeffect_opengl_NativeOpengl_surfaceCreate(JNIEnv *env, jobject instance,
                                                                jobject surface) {
-
     // TODO
-    aNativeWindow = ANativeWindow_fromSurface(env, surface);
-    wlEglThread = new WLEglThread();
-    wlEglThread->setRenderType(OPENGL_RENDER_HANDLE);//设置为手动渲染
-    wlEglThread->callbackOnCreate(callback_SurfaceCreate, wlEglThread);
-    wlEglThread->callbackOnChange(callback_SurfaceOnchage, wlEglThread);
-    wlEglThread->callbackOnDraw(callback_SurfaceOndraw, wlEglThread);
+    if(wlOpengl == NULL){
+        wlOpengl = new WLOpengl();
+    }
+    wlOpengl->onCreateSurface(env,surface);
 
-
-    wlEglThread->onSurfaceCreate(aNativeWindow);
-
-
-}extern "C"
+}
+extern "C"
 JNIEXPORT void JNICALL
 Java_videoeditor_videoeffect_opengl_NativeOpengl_surfaceChange(JNIEnv *env, jobject instance,
                                                                jint width, jint height) {
 
-    // TODO
-    if (wlEglThread != NULL) {
-        wlEglThread->onSurfaceChange(width, height);
-        usleep(1000000);
-        wlEglThread->notifyRender();
+    if(wlOpengl!=NULL){
+        wlOpengl->onChangeSurface(width,height);
     }
+
 
 }extern "C"
 JNIEXPORT void JNICALL
 Java_videoeditor_videoeffect_opengl_NativeOpengl_imgData(JNIEnv *env, jobject instance, jint width,
                                                          jint height, jint lenth, jbyteArray
                                                          data_) {
-    jbyte *data = env->GetByteArrayElements(data_, NULL);
+    jbyte * data = env->GetByteArrayElements(data_,NULL);
+    if(wlOpengl != NULL){
+        wlOpengl->setPilex(data,width,height,lenth);
+    }
+    env->ReleaseByteArrayElements(data_,data,0);
 
-    w = width;
-    h = height;
+}
 
-    pixels = malloc(lenth);
-    memcpy(pixels, data, lenth);
+extern "C"
+JNIEXPORT void JNICALL
+Java_videoeditor_videoeffect_opengl_NativeOpengl_surfaceDestory(JNIEnv *env, jobject instance) {
 
-    env->ReleaseByteArrayElements(data_, data, 0);
+    if(wlOpengl != NULL){
+        wlOpengl->onDestorySurface();
+        delete wlOpengl;
+        wlOpengl = NULL;
+
+    }
+
+
 }

@@ -67,6 +67,9 @@ void* eglThreadImpl(void* context){
 
 
             if(wlEglThread->isExit){
+                wlEglHelper->destoryEgl();
+                delete  wlEglHelper;
+                wlEglHelper = NULL;
                 break;
             }
 
@@ -120,4 +123,12 @@ void WLEglThread::notifyRender() {
     pthread_cond_signal(&pthread_cond);
     pthread_mutex_unlock(&pthread_mutex);
 
+}
+
+void WLEglThread::destroy() {
+    isExit = true;
+    notifyRender();
+    pthread_join(eglThread,NULL);
+    nativeWindow = NULL;
+    eglThread = -1;
 }
