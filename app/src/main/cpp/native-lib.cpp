@@ -9,6 +9,7 @@
 #include "egl/WLEglThread.h"
 #include "log/WLAndroidLog.h"
 #include "shaderutil/WLShaderUtil.h"
+#include "matrix/MatrixUtil.h"
 
 
 ANativeWindow *aNativeWindow = NULL;
@@ -18,9 +19,10 @@ WLEglThread *wlEglThread = NULL;
 const char *vertex = "attribute vec4 v_Position;\n"
                      "attribute vec2 f_Position; \n"
                      "varying vec2 ft_Position;\n"
+                     "uniform mat4 u_Matrix;\n"
                      "void main(){\n"
                      "    ft_Position = f_Position;\n"
-                     "    gl_Position = v_Position;\n"
+                     "    gl_Position = v_Position * u_Matrix;\n"
                      "}";
 const char *fragment = "precision mediump float;\n"
                        "varying vec2 ft_Position;\n"
@@ -34,6 +36,7 @@ int program;
 GLint vPostion;
 GLint fPostion;
 GLint sampler;
+GLint u_Matrix;
 GLuint textureId;
 void *pixels = NULL;
 
@@ -57,6 +60,8 @@ float fragments[] = {
         0, 0
 };
 
+float matrix[16];
+
 
 void callback_SurfaceCreate(void *ctx) {
     LOGD("callback_SurfaceCreate");
@@ -67,6 +72,9 @@ void callback_SurfaceCreate(void *ctx) {
     vPostion = glGetAttribLocation(program, "v_Position"); //顶点坐标
     fPostion = glGetAttribLocation(program, "f_Position"); //纹理坐标
     sampler = glGetUniformLocation(program, "sTexture"); //2d纹理
+    u_Matrix = glGetUniformLocation(program, "u_Matrix"); //坐标变换矩阵
+
+    initMatrix(matrix); //初始化成单位矩阵
 
     glGenTextures(1, &textureId); //生成一个纹理，并赋值到textureId上面
 
@@ -101,6 +109,9 @@ void callback_SurfaceOndraw(void *ctx) {
     WLEglThread *wlEglThread1 = static_cast<WLEglThread *>(ctx);
     glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    glUseProgram(program);
+    glUniformMatrix4fv(u_Matrix,1,GL_FALSE,matrix); //赋值矩阵
 
 
     glActiveTexture(GL_TEXTURE0); //激活默认第0个纹理
